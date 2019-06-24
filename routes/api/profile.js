@@ -26,7 +26,7 @@ router.get('/me',
         }
     });
 
-//@route  Get api/profile
+//@route  Post api/profile
 //@desc   Create or update user profile
 //@acess  Private
 router.post('/',
@@ -102,6 +102,36 @@ router.post('/',
         }
         console.log("hello");
     }
-)
+);
+
+//@route  Get api/profile
+//@desc   Get all profiles
+//@acess  Public
+router.get('/', async (req, res) => {
+    try {
+        const profiles = await Profile.find().populate('user', ['name', 'avatar']);
+        res.json(profiles);
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+});
+
+//@route  Get api/profile/user/:user_id
+//@desc   Get profile by user ID
+//@acess  Public
+router.get('/user/:user_id', async (req, res) => {
+    try {
+        const profile = await Profile.findOne({ user: req.params.user_id }).populate('user', ['name', 'avatar']);
+        if (!profile) return res.status(400).json({ msg: 'Profile not found' });
+        res.json(profile);
+    } catch (error) {
+        console.log(error.kind)
+        if (error.kind === 'ObjectId') {
+            return res.status(400).json({ msg: 'Profile not found' });
+        }
+        res.status(500).send('Server error');
+    }
+});
 
 module.exports = router;
